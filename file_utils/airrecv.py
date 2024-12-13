@@ -40,7 +40,7 @@ def recv_files():
 		sock=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 		sock.bind(('0.0.0.0', TCP_PORT))
-		sock.settimeout(5)
+		sock.settimeout(10)
 		sock.listen()
 		send_discovery()
 		print("Discovery sent")
