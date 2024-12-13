@@ -1,9 +1,15 @@
 import socket
 import psutil
 import ipaddress
+import os
+import pathlib
 
 UDP_PORT=5005
 TCP_PORT=5006
+
+bufferpath=os.path.join(os.environ.get('TEMP'), 'aircopybuffer')
+outpath=os.path.join(os.environ.get('USERPROFILE'), 'Downloads', 'AirCopy')
+pathlib.Path(outpath).mkdir(parents=True, exist_ok=True)
 
 def calc_broadcast(ip, netmask):
 	ip_int=int(ipaddress.IPv4Address(ip))
@@ -30,32 +36,50 @@ def send_discovery():
 		sock.sendto('AIRCOPY_DISCOVERY'.encode(), (addr, UDP_PORT))
 		
 def recv_files():
-	sock=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-	sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-	sock.bind(('0.0.0.0', TCP_PORT))
-	sock.listen()
-	send_discovery()
-	print("Discovery sent")
-	conn, addr = s.accept()
-	currfile=None
-	while True:
-		data=conn.recv(1024)
-		if not data:
-			break
-		begin='HEADER'
-		end='COMPLETE'
-		header_flag=False
-		end_flag=False
-		if data[:len(begin)]==begin.encode():
-			header_flag=True
-			filename=data[len(begin):].decode()
-			print("Receiving ", filename)
-			currfile=open(filename, 'wb')
-		elif data[:len(end)]==end.encode():
-			end_flag=True
-			currfile.close()
-		else:
+	try:
+		sock=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+		sock.bind(('0.0.0.0', TCP_PORT))
+		sock.settimeout(5)
+		sock.listen()
+		send_discovery()
+		print("Discovery sent")
+		conn, addr = sock.accept()
+		currfile=open('buffer', 'wb')
+		while True:
+			data=conn.recv(1024)
+			if not data:
+				break
 			currfile.write(data)
-	sock.close()
-	
+		sock.close()
+		currfile.close()
+		process_buffer()
+	except:
+		pass
 
+def process_buffer():
+	begin='HEADERFL'
+	end='COMPLETE'
+	buf_file=open('buffer', 'rb')
+	buf=buf_file.read()
+	totlen=len(buf)
+	i=0
+	currfile=None
+	while i<totlen:
+		if buf[i:i+len(begin)]==begin.encode():
+			i=i+len(begin)
+			j=buf[i:i+3]
+			fllen=int(j.decode())
+			i=i+3
+			filename=buf[i:i+fllen].decode()
+			currfilepath=os.path.join(outpath, filename)
+			currfile=open(currfilepath, 'wb')
+			i=i+fllen
+		elif buf[i:i+len(begin)]==end.encode():
+			currfile.close()
+			i=i+len(begin)
+		else:
+			currfile.write(bytes([buf[i]]))
+			i=i+1
+	buf_file.close()
+	

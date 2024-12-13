@@ -184,7 +184,7 @@ def main():
         debug_image = draw_info(debug_image, fps, mode, number)
 
         # Screen reflection #############################################################
-        cv.imshow('Hand Gesture Recognition', debug_image)
+        cv.imshow('AirCopy', debug_image)
 
     cap.release()
     cv.destroyAllWindows()
