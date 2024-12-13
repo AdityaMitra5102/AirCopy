@@ -19,7 +19,7 @@ def transfer(filelist):
 	try:
 		sock=socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 		sock.bind(('0.0.0.0', UDP_PORT))
-		sock.settimeout(5)
+		sock.settimeout(10)
 		data,addr = sock.recvfrom(1024)
 		print(addr)
 		print(data)
