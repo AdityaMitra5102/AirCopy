@@ -11,6 +11,11 @@ def pad_number(n):
 	return x
 
 def transfer(filelist):
+	if len(filelist)==0:
+		return
+	print("Attempting to send ")
+	for x in filelist:
+		print(x)
 	try:
 		sock=socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 		sock.bind(('0.0.0.0', UDP_PORT))
