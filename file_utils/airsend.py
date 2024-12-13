@@ -11,12 +11,13 @@ def transfer(filelist):
 	data,addr = sock.recvfrom(1024)
 	print(data)
 	if data.decode()=='AIRCOPY_DISCOVERY':
-		print("received")
+		print("Discovery received")
 	sock.close()
 	client=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 	client.connect((addr, TCP_PORT))
 	for file in filelist:
 		filename=os.path.basename(file)
+		print("Sending ", filename)
 		header='HEADER'+filename
 		client.sendall(header.encode())
 		currfile=open(file, 'rb')

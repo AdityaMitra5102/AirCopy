@@ -35,6 +35,7 @@ def recv_files():
 	sock.bind(('0.0.0.0', TCP_PORT))
 	sock.listen()
 	send_discovery()
+	print("Discovery sent")
 	conn, addr = s.accept()
 	currfile=None
 	while True:
@@ -48,6 +49,7 @@ def recv_files():
 		if data[:len(begin)]==begin.encode():
 			header_flag=True
 			filename=data[len(begin):].decode()
+			print("Receiving ", filename)
 			currfile=open(filename, 'wb')
 		elif data[:len(end)]==end.encode():
 			end_flag=True
