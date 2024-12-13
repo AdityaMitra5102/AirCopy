@@ -11,6 +11,7 @@ bufferpath=os.path.join(os.environ.get('TEMP'), 'aircopybuffer')
 outpath=os.path.join(os.environ.get('USERPROFILE'), 'Downloads', 'AirCopy')
 pathlib.Path(outpath).mkdir(parents=True, exist_ok=True)
 
+
 def calc_broadcast(ip, netmask):
 	ip_int=int(ipaddress.IPv4Address(ip))
 	netmask_int=int(ipaddress.IPv4Address(netmask))
@@ -37,6 +38,10 @@ def send_discovery():
 		
 def recv_files():
 	try:
+		os.remove(bufferpath)
+	except:
+		pass
+	try:
 		sock=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 		sock.bind(('0.0.0.0', TCP_PORT))
@@ -45,22 +50,23 @@ def recv_files():
 		send_discovery()
 		print("Discovery sent")
 		conn, addr = sock.accept()
-		currfile=open('buffer', 'wb')
-		while True:
-			data=conn.recv(1024)
-			if not data:
-				break
-			currfile.write(data)
-		sock.close()
-		currfile.close()
-		process_buffer()
 	except:
-		pass
+		return
+	currfile=open(bufferpath, 'wb')
+	while True:
+		data=conn.recv(1024)
+		if not data:
+			break
+		currfile.write(data)
+	sock.close()
+	currfile.close()
+	process_buffer()
 
 def process_buffer():
+	print('Received. Processing Buffer')
 	begin='HEADERFL'
 	end='COMPLETE'
-	buf_file=open('buffer', 'rb')
+	buf_file=open(bufferpath, 'rb')
 	buf=buf_file.read()
 	totlen=len(buf)
 	i=0
@@ -82,4 +88,5 @@ def process_buffer():
 			currfile.write(bytes([buf[i]]))
 			i=i+1
 	buf_file.close()
+	print("Processing complete")
 	
