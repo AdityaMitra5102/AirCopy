@@ -29,6 +29,8 @@ def transfer(filelist):
 		client=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		client.connect((str(addr[0]), TCP_PORT))
 		for file in filelist:
+			if not os.path.isfile(file):
+				continue
 			filename=os.path.basename(file)
 			print("Sending ", filename)
 			header='HEADERFL'+pad_number(len(filename))+filename
